@@ -74,10 +74,13 @@ def main():
         while not(job_is_running):
             job_is_running, jobid = is_job_running(casename)
             print(f"{casename} is running: {job_is_running} ({jobid})")
-            time.sleep(60*10) # Wait 10 min
+            if not(job_is_running):
+                time.sleep(60*10) # Wait 10 min
+            else:
+                time.sleep(60) # Wait 1 min
 
         # Get name of coupler file
-        cplfile = os.popen("ls {rundir}/{casename}/run/cpl.log.{jobid}.*").read().split("\n")[0]
+        cplfile = os.popen(f"ls {rundir}/{casename}/run/cpl.log.{jobid}.*").read().split("\n")[0]
         print(f"Reading cpl file: {cplfile}")
 
         # Check if last line of cpl is the same after 10 min
@@ -86,8 +89,14 @@ def main():
         print(f"{cpl_last_line}")
         while not(equal_line):
             time.sleep(60*10) # Wait 10 min
-            new_last_line, success = get_last_line(cplfile)
-            print(f"{new_last_line}")
+            cplfileexist = os.path.isfile(cplfile)
+            if cplfileexist:
+                new_last_line, success = get_last_line(cplfile)
+                print(f"{new_last_line}")
+            else: # Cpl file moved after successfull run
+                equal_line = True
+                success = True
+
             if new_last_line[:-4] == "(component_init_cc:mct) : Initialize component":
                 None
             elif new_last_line == cpl_last_line:
@@ -97,10 +106,11 @@ def main():
 
         if not(success):
             print("Run is hanging, cancel and resubmit....")
-            resubmit(casedir,jobid)
+            #resubmit(casedir,jobid)
         else:
             print("Job finished successfully!")
 
+        sys.exit()
         print("\n\n\n")
 
 main()
