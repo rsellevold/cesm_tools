@@ -88,7 +88,7 @@ def main():
         cpl_last_line, success = get_last_line(cplfile)
         print(f"{cpl_last_line}")
         while not(equal_line):
-            time.sleep(60*10) # Wait 10 min
+            time.sleep(60*5) # Wait 5 min
             cplfileexist = os.path.isfile(cplfile)
             if cplfileexist:
                 new_last_line, success = get_last_line(cplfile)
@@ -97,7 +97,7 @@ def main():
                 equal_line = True
                 success = True
 
-            if new_last_line[:-4] == "(component_init_cc:mct) : Initialize component":
+            if new_last_line[:-5] == "(component_init_cc:mct) : Initialize component":
                 None
             elif new_last_line == cpl_last_line:
                 equal_line = True
