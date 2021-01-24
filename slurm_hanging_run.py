@@ -58,7 +58,10 @@ def get_last_line(f):
 
 def resubmit(casedir,casename,jobid):
     os.system(f"scancel {jobid}")
-    os.system(f"./{casedir}/{casename}/case.submit")
+    current_dir = os.popen("pwd").read().split("\n")[0]
+    os.system(f"cd {casedir}/{casename}")
+    os.system("./case.submit")
+    os.system(f"cd {current_dir}")
 
 
 
@@ -86,13 +89,13 @@ def main():
         # Check if last line of cpl is the same after 10 min
         equal_line = False
         cpl_last_line, success = get_last_line(cplfile)
-        print(f"{cpl_last_line}")
+        print(f"{cpl_last_line[:-1]}")
         while not(equal_line):
             time.sleep(60*5) # Wait 5 min
             cplfileexist = os.path.isfile(cplfile)
             if cplfileexist:
                 new_last_line, success = get_last_line(cplfile)
-                print(f"{new_last_line}")
+                print(f"{new_last_line[:-1]}")
             else: # Cpl file moved after successfull run
                 equal_line = True
                 success = True
@@ -106,11 +109,10 @@ def main():
 
         if not(success):
             print("Run is hanging, cancel and resubmit....")
-            #resubmit(casedir,jobid)
+            resubmit(casedir,casename,jobid)
         else:
             print("Job finished successfully!")
 
-        sys.exit()
         print("\n\n\n")
 
 main()
