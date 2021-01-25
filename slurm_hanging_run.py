@@ -59,9 +59,9 @@ def get_last_line(f):
 def resubmit(casedir,casename,jobid):
     os.system(f"scancel {jobid}")
     current_dir = os.popen("pwd").read().split("\n")[0]
-    os.system(f"cd {casedir}/{casename}")
+    os.chdir(f"{casedir}/{casename}")
     os.system("./case.submit")
-    os.system(f"cd {current_dir}")
+    os.chdir(f"{current_dir}")
 
 
 
