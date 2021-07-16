@@ -1,3 +1,8 @@
+#!/bin/python3 -u
+#SBATCH -N 1
+#SBATCH -p short
+#SBATCH -t 10:00
+
 """
 This script check if a model run is hanging, and works with the
 slurm workload manager.
@@ -7,7 +12,7 @@ resubmit the model run.
 """
 
 import os, sys, time
-
+import multiprocessing as mp
 
 
 def job_info(jobid):
@@ -69,11 +74,7 @@ def cancel(casedir,casename,jobid):
 
 
 
-def main():
-    casename = "b.e21.B1850G.f09_g17_gl4.CMIP6-1pctCO2-2.5xCO2.001"
-    rundir = "/scratch-shared/raymond"
-    casedir = "/home/raymond/cases/CO2"
-
+def watch(casename, rundir, casedir):
     while True:
 
         # Check if the job is running
@@ -119,4 +120,18 @@ def main():
 
         print("\n\n\n")
 
-main()
+def main():
+    cases = []
+    cases.append(["b.e21.B1850G.f09_g17_gl4.CMIP6-1pctCO2-2xCO2.002","/scratch-shared/raymond","/home/raymond/cases/CO2"])
+    cases.append(["b.e21.B1850G.f09_g17_gl4.CMIP6-1pctCO2-2.5xCO2.001","/scratch-shared/raymond","/home/raymond/cases/CO2"])
+    cases.append(["b.e21.B1850G.f09_g17_gl4.CMIP6-1pctCO2-3xCO2.001","/scratch-shared/raymond","/home/raymond/cases/CO2"])
+    cases.append(["b.e21.B1850G.f09_g17_gl4.CMIP6-1pctCO2-recovery.001","/scratch-shared/raymond","/home/raymond/cases/CO2"])
+
+    jobs = []
+    for i in range(len(cases)):
+        p = mp.Process(target=watch, args=(cases[i][0], cases[i][1], cases[i][2],))
+        jobs.append(p)
+        p.start()
+
+if __name__ == "__main__":
+    main()
