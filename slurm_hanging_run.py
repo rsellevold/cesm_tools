@@ -13,8 +13,16 @@ import os, sys, time
 def job_info(jobid):
     # Retrieve casename and whether the job is currently running
     jobstat = os.popen(f"job-statistics -j {jobid}").read().split("\n")
-    case = jobstat[2][24:].replace("run.","")
-    starttime = jobstat[4][24:]
+    try:
+        case = jobstat[2][24:].replace("run.","")
+    except:
+        case = "IDK"
+
+    try:
+        starttime = jobstat[4][24:]
+    except:
+        starttime = "Unknown"
+        
     if starttime=="Unknown":
         running = False
     else:
@@ -31,7 +39,7 @@ def is_job_running(casename):
     jobid_case = -1
     jobs = os.popen("squeue").read().split("\n")
     for i in range(1,len(jobs)-1):
-        jobid = int(jobs[i][11:18])
+        jobid = int(jobs[i][9:18])
         case, running = job_info(jobid)
         if case==casename:
             jobid_case = jobid
@@ -56,19 +64,15 @@ def get_last_line(f):
 
 
 
-def resubmit(casedir,casename,jobid):
+def cancel(casedir,casename,jobid):
     os.system(f"scancel {jobid}")
-    current_dir = os.popen("pwd").read().split("\n")[0]
-    os.chdir(f"{casedir}/{casename}")
-    os.system("./case.submit")
-    os.chdir(f"{current_dir}")
 
 
 
 def main():
-    casename = "b.e21.B1850CAM5.f09_g17.26ka-spinup.001"
+    casename = "b.e21.B1850G.f09_g17_gl4.CMIP6-1pctCO2-2.5xCO2.001"
     rundir = "/scratch-shared/raymond"
-    casedir = "/projects/0/couplice/cases/cases_LGM_B-I"
+    casedir = "/home/raymond/cases/CO2"
 
     while True:
 
@@ -108,8 +112,8 @@ def main():
                 cpl_last_line = new_last_line
 
         if not(success):
-            print("Run is hanging, cancel and resubmit....")
-            resubmit(casedir,casename,jobid)
+            print("Run is hanging, cancel!....")
+            cancel(casedir,casename,jobid)
         else:
             print("Job finished successfully!")
 
